@@ -1,1 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ACE Expense Portal</title>
+  <style>
+    body { margin:0; font-family: Arial, sans-serif; background:#0b0b0b; color:#fff; }
+    .wrap { max-width:520px; margin:0 auto; padding:24px; }
+    .card { background:#141414; border:1px solid #242424; border-radius:16px; padding:18px; }
+    h1 { margin:0 0 6px; font-size:22px; }
+    .sub { opacity:.8; margin:0 0 14px; font-size:13px; }
+    label { display:block; margin:12px 0 6px; font-size:13px; opacity:.9; }
+    input, select, textarea {
+      width:100%; box-sizing:border-box; padding:12px; border-radius:12px;
+      border:1px solid #2a2a2a; background:#0f0f0f; color:#fff;
+    }
+    button {
+      width:100%; margin-top:14px; padding:14px; border:none; border-radius:14px;
+      background:#00ff88; color:#000; font-weight:700; font-size:15px;
+    }
+    .row { display:flex; gap:10px; }
+    .row > div { flex:1; }
+    .status { margin-top:12px; font-size:13px; opacity:.9; }
+    .ok { color:#00ff88; }
+    .bad { color:#ff6b6b; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>ACE Expense Portal</h1>
+      <p class="sub">Upload a receipt and log it straight into your spreadsheet.</p>
+
+      <form id="f">
+        <label>Type</label>
+        <select name="type" required>
+          <option value="Expense">Expense</option>
+          <option value="Income">Income</option>
+        </select>
+
+        <div class="row">
+          <div>
+            <label>Payment Method</label>
+            <select name="payment_method">
+              <option value="Card">Card</option>
+              <option value="Cash">Cash</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+            </select>
+          </div>
+          <div>
+            <label>Category</label>
+            <select name="category">
+              <option value="Fuel">Fuel</option>
+              <option value="Supplies">Supplies</option>
+              <option value="Chemicals">Chemicals</option>
+              <option value="Equipment">Equipment</option>
+              <option value="Repairs">Repairs</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Receipt Photo</label>
+        <input type="file" name="receipt" accept="image/*" capture="environment" required>
+
+        <label>Notes (optional)</label>
+        <textarea name="notes" rows="3" placeholder="Any notes…"></textarea>
+
+        <button type="submit">Upload Receipt</button>
+        <div id="status" class="status"></div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const WEBHOOK_URL = "[PASTE_YOUR_N8N_WEBHOOK_URL_HERE](https://apexcleaningelit.app.n8n.cloud/webhook/expense-portal)";
+
+    const f = document.getElementById("f");
+    const statusEl = document.getElementById("status");
+
+    f.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      statusEl.textContent = "Uploading…";
+      statusEl.className = "status";
+
+      const fd = new FormData(f);
+
+      try {
+        const r = await fetch(WEBHOOK_URL, { method: "POST", body: fd });
+        if (!r.ok) throw new Error("Upload failed");
+
+        statusEl.textContent = "✅ Uploaded. Logged to sheet (if workflow is active).";
+        statusEl.className = "status ok";
+        f.reset();
+      } catch (err) {
+        statusEl.textContent = "❌ Error. Check webhook URL + n8n workflow is active.";
+        statusEl.className = "status bad";
+      }
+    });
+  </script>
+</body>
+</html>
 # ace-expense-portal
